@@ -339,6 +339,8 @@ async function attemptTurnstileCdp(page) {
                                 console.log('   >> Main Renew button not visible? Maybe already renewed.');
                                 break;
                             }
+                        } else {
+                            console.log('   >> Modal is already open. Proceeding to verification...');
                         }
 
                         // A. 尝试寻找并点击 Turnstile (增加内部重试，防止太快)
@@ -402,15 +404,10 @@ async function attemptTurnstileCdp(page) {
                             } catch (e) { }
 
                             if (hasError) {
-                                console.log('   >> Error found. Closing modal to RESTART flow...');
-                                try {
-                                    const closeBtn = modal.getByLabel('Close');
-                                    if (await closeBtn.isVisible()) await closeBtn.click();
-                                    else await page.keyboard.press('Escape');
-                                } catch (e) { }
-
-                                await page.waitForTimeout(2500);
-                                continue; // 只有出错了才重启
+                                console.log('   >> Error found. Refreshing page to reset Turnstile...');
+                                await page.reload();
+                                await page.waitForTimeout(3000); // 等待页面加载
+                                continue; // 刷新后，跳回循环开头，逻辑会自动检测到模态框不在，从而去点击主 Renew 按钮
                             }
 
                             // D. 检查成功状态 (模态框消失)

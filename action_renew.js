@@ -288,6 +288,8 @@ async function attemptTurnstileCdp(page) {
                             } else {
                                 break;
                             }
+                        } else {
+                            console.log('   >> Modal is already open. Proceeding...');
                         }
 
                         // A. Find Turnstile (Retry loop)
@@ -341,14 +343,10 @@ async function attemptTurnstileCdp(page) {
                             } catch (e) { }
 
                             if (hasError) {
-                                console.log('   >> Error detected. Resetting (Close Modal)...');
-                                try {
-                                    const closeBtn = modal.getByLabel('Close');
-                                    if (await closeBtn.isVisible()) await closeBtn.click();
-                                    else await page.keyboard.press('Escape');
-                                } catch (e) { }
-                                await page.waitForTimeout(2500);
-                                continue; // Loop back to step 0 to re-open modal
+                                console.log('   >> Error detected. Refreshing page to reset Turnstile...');
+                                await page.reload();
+                                await page.waitForTimeout(3000);
+                                continue;
                             }
 
                             await page.waitForTimeout(2000);
